@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  name            String?
+  password        String
+  active          Boolean           @default(false)
+  lastLogin       DateTime?
+  createdAt       DateTime          @default(now())
+  chats           ChatRoomUsers[]
+  UserVerifyToken UserVerifyToken[]
+}
+
+model ChatRoom {
+  id        String          @id @default(uuid())
+  users     ChatRoomUsers[]
+  createdAt DateTime        @default(now())
+}
+
+model ChatRoomUsers {
+  userId     String
+  chatRoomId String
+  user       User     @relation(fields: [userId], references: [id])
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+
+  @@id([userId, chatRoomId])
+}
+
+model UserVerifyToken {
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  token  String
+
+  @@unique([userId, token])
+}
